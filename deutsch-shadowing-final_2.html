@@ -154,6 +154,7 @@
   .modal .hint { color: var(--text-faint); font-size: 0.78rem; margin-bottom: 18px; line-height: 1.5; }
   .field { margin-bottom: 14px; }
   .field label { display: block; font-size: 0.72rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .field-hint { font-size: 0.74rem; color: var(--text-faint); margin-top: 5px; line-height: 1.4; font-weight: 400; text-transform: none; letter-spacing: normal; }
   .field input, .field textarea, .field select {
     width: 100%; background: var(--bg-elev-2); border: 1px solid var(--line); border-radius: var(--radius-sm);
     padding: 11px 12px; color: var(--text); font-size: 0.95rem; font-family: inherit;
@@ -366,7 +367,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <h3 id="phraseFormTitle">Nova frase</h3>
-    <div class="hint">Preencha o alemão, a tradução e, se quiser, a transcrição fonética (IPA) e um áudio.</div>
+    <div class="hint">Só o alemão e a categoria são obrigatórios. IPA, tradução e áudio ficam em branco até você preencher — o app não gera nada disso sozinho.</div>
     <div class="form-error" id="phraseFormError"></div>
     <div class="field">
       <label>Alemão</label>
@@ -375,10 +376,12 @@
     <div class="field">
       <label>IPA (opcional)</label>
       <input id="fIpa" placeholder="[viː vaːɐ̯ daɪ̯n taːk]">
+      <div class="field-hint">Digite você mesmo a transcrição fonética, se quiser. Não é gerada automaticamente — fica vazio até você preencher.</div>
     </div>
     <div class="field">
-      <label>Tradução (PT)</label>
+      <label>Tradução (opcional)</label>
       <textarea id="fPt" placeholder="Como foi seu dia?"></textarea>
+      <div class="field-hint">Também é manual — sem tradução automática. Pode deixar em branco e preencher depois editando a frase.</div>
     </div>
     <div class="field">
       <label>Categoria</label>
@@ -405,7 +408,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <h3 id="storyFormTitle">Nova história</h3>
-    <div class="hint">Adicione o título, a categoria, um áudio da narração completa (opcional) e as frases que compõem a história.</div>
+    <div class="hint">Título, categoria e ao menos uma frase (em alemão) são obrigatórios. IPA, tradução e áudio ficam em branco até você preencher — nada disso é gerado automaticamente.</div>
     <div class="form-error" id="storyFormError"></div>
     <div class="field">
       <label>Título</label>
@@ -641,10 +644,12 @@ function precomputeAudioUrls(items) {
   });
 }
 async function savePhrases() {
-  try { await idbReplaceAll('phrases', phrases); } catch (e) {}
+  try { await idbReplaceAll('phrases', phrases); }
+  catch (e) { alert('⚠️ Não consegui salvar no armazenamento deste navegador. Erro: ' + (e && e.message ? e.message : e)); }
 }
 async function saveStories() {
-  try { await idbReplaceAll('stories', stories); } catch (e) {}
+  try { await idbReplaceAll('stories', stories); }
+  catch (e) { alert('⚠️ Não consegui salvar no armazenamento deste navegador. Erro: ' + (e && e.message ? e.message : e)); }
 }
 
 /* ---------- helpers ---------- */
@@ -819,8 +824,16 @@ function sentenceBlockHtml(idx, s) {
     <div class="sentence-block" data-idx="${idx}">
       <div class="sentence-head"><span>Frase ${idx + 1}</span><button type="button" class="rm-sentence" data-rm="${idx}">remover</button></div>
       <div class="field"><label>Alemão</label><textarea class="s-de">${s.de}</textarea></div>
-      <div class="field"><label>IPA (opcional)</label><input class="s-ipa" value="${s.ipa || ''}"></div>
-      <div class="field"><label>Tradução (PT)</label><textarea class="s-pt">${s.pt}</textarea></div>
+      <div class="field">
+        <label>IPA (opcional)</label>
+        <input class="s-ipa" value="${s.ipa || ''}">
+        <div class="field-hint">Manual, sem geração automática — pode deixar em branco.</div>
+      </div>
+      <div class="field">
+        <label>Tradução (opcional)</label>
+        <textarea class="s-pt">${s.pt}</textarea>
+        <div class="field-hint">Também manual — pode deixar em branco e preencher depois editando a história.</div>
+      </div>
     </div>`;
 }
 let storySentences = [];
